@@ -5,7 +5,11 @@ from signal import signal, SIGINT
 from sys import exit
 from random import randint
 import time
+from datetime import datetime
+import json
 import psutil
+import pytz
+import random
 from paho.mqtt import client as mqtt_client
 
 # connect to broker
@@ -37,7 +41,24 @@ def publish(client, topic):
         cpu_percent = psutil.cpu_percent(interval=1)
 
         # time.sleep(1)
-        msg = f"cpu_load: {cpu_percent}"
+        # msg = f"cpu_load: {cpu_percent}"
+        currentDate = datetime.now()
+        timezone = pytz.timezone('Asia/Jakarta')
+        currentDate = timezone.localize(currentDate)
+        randBool = bool(random.getrandbits(1))
+        randVal = random.uniform(50.0, 70.0)
+        msg = json.dumps({
+                    'device_id': '2',
+                    'time': currentDate.isoformat(' '),
+                    'loc_lat': 40.689247,
+                    'loc_long': -74.044502,
+                    'fuel': 0,
+                    'electric': randVal,
+                    'is_electric': True,
+                    'door_open': randBool,
+                    'temperature': cpu_percent,
+                    'humidity': 0
+                })
         result = client.publish(topic, msg)
         # result: [0, 1]
         status = result[0]
