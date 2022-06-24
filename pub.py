@@ -88,12 +88,12 @@ def run():
     while True:
         # get config
         config = getConfig()
-        broker = config['SERVER']['broker']
-        port = config['SERVER']['port']
-        topic = config['SERVER']['topic']
+        broker = config['SERVER_MQTT']['broker_pub']
+        port = config['SERVER_MQTT']['port']
+        topic = config['SERVER_MQTT']['topic']
         client_id = config['PUB']['client_id']
-        user = config['USER']['username']
-        paswd = config['USER']['password']
+        user = config['USER_MQTT']['username']
+        paswd = config['USER_MQTT']['password']
 
         client = connect_mqtt(broker, int(port), client_id, user, paswd)
         client.loop_start()

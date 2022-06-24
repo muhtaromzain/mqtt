@@ -1,12 +1,16 @@
-import paho.mqtt.client as mqtt
+from paho.mqtt import client as mqtt_client
 from confluent_kafka import Producer, KafkaError
 import json
 from configparser import ConfigParser
 
-config_parser = ConfigParser()
-config_parser.read('config.ini') 
-config = dict(config_parser['SERVER_KAFKA'])
-producer = Producer(config)
+def getConfig():
+    config_parser = ConfigParser()
+    config_parser.read('config.ini')
+    return config_parser
+
+config = getConfig()
+serverKafka = dict(config['SERVER_KAFKA'])
+producer = Producer(serverKafka)
 
 # Create topic if needed
 topic = "esp"
@@ -19,7 +23,7 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("esp")
+    client.subscribe(config['SERVER_MQTT']['topic'])
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
@@ -49,13 +53,13 @@ def acked(err, msg):
         print("Produced record to topic {} partition [{}] @ offset {}"
                 .format(msg.topic(), msg.partition(), msg.offset()))
 
-client = mqtt.Client()
+client = mqtt_client.Client(config['SUB']['client_id'], clean_session=True, userdata=None, protocol=mqtt_client.MQTTv311, transport="tcp")
 client.on_connect = on_connect
 client.on_message = on_message
 # client.tls_set()
-client.username_pw_set(username="pentagon", password="area69")
+client.username_pw_set(username=config['USER_MQTT']['username'], password=config['USER_MQTT']['password'])
 print("Connecting....")
-client.connect("demo.sbumedan.co.id", 1883, 60)
+client.connect(config['SERVER_MQTT']['broker_sub'], int(config['SERVER_MQTT']['port']), 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
